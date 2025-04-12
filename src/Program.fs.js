@@ -2,6 +2,7 @@ import { FSharpRef, Union } from "./fable_modules/fable-library-js.4.24.0/Types.
 import { union_type } from "./fable_modules/fable-library-js.4.24.0/Reflection.js";
 import * as react from "react";
 import { printf, toText } from "./fable_modules/fable-library-js.4.24.0/String.js";
+import { Common_lazyView2 } from "./fable_modules/Fable.Elmish.React.4.0.0/common.fs.js";
 import { Program_Internal_withReactSynchronousUsing } from "./fable_modules/Fable.Elmish.HMR.7.0.0/../Fable.Elmish.React.4.0.0/react.fs.js";
 import { lazyView2With } from "./fable_modules/Fable.Elmish.HMR.7.0.0/./common.fs.js";
 import { uncurry2 } from "./fable_modules/fable-library-js.4.24.0/Util.js";
@@ -43,20 +44,24 @@ export function update(msg, count) {
     }
 }
 
+export function btn(model, dispatch) {
+    return react.createElement("button", {
+        onClick: (_arg) => {
+            dispatch(new Msg(0, []));
+        },
+        className: "btn btn-primary",
+    }, "+");
+}
+
 export function view(model, dispatch) {
     let children_2;
-    const children_6 = [react.createElement("button", {
+    const children_4 = [react.createElement("button", {
         onClick: (_arg) => {
             dispatch(new Msg(1, []));
         },
         className: "btn btn-primary",
-    }, "-"), (children_2 = [toText(printf("%A"))(model)], react.createElement("div", {}, ...children_2)), react.createElement("button", {
-        onClick: (_arg_1) => {
-            dispatch(new Msg(0, []));
-        },
-        className: "btn btn-primary",
-    }, "+")];
-    return react.createElement("div", {}, ...children_6);
+    }, "-"), (children_2 = [toText(printf("%A"))(model)], react.createElement("div", {}, ...children_2)), Common_lazyView2(btn)(model)(dispatch)];
+    return react.createElement("div", {}, ...children_4);
 }
 
 (function () {

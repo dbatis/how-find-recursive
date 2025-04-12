@@ -3,6 +3,7 @@
 open Fable.Core.JsInterop
 open Fable.React
 open Fable.React.Props
+open Elmish.React
 open Elmish
 
 type Model = int
@@ -18,15 +19,21 @@ let update (msg: Msg) count =
     | Increment -> count + 1
     | Decrement -> count - 1
 
+let btn model dispatch =
+    button [ OnClick (fun _ -> dispatch Increment); ClassName "btn btn-primary" ] [ str "+" ]
+
 let view model dispatch =
     div []
         [
-            button [ OnClick (fun _ -> dispatch Decrement); ClassName "btn btn-primary" ] [ str "-" ]
+            button
+                [ OnClick (fun _ -> dispatch Decrement)
+                  ClassName "btn btn-primary"
+                ]
+                [ str "-" ]
             div [] [ str (sprintf "%A" model) ]
-            button [ OnClick (fun _ -> dispatch Increment); ClassName "btn btn-primary" ] [ str "+" ]
+            lazyView2 btn model dispatch
         ]
 
-open Elmish.React
 open Elmish.HMR
 
 Program.mkSimple init update view

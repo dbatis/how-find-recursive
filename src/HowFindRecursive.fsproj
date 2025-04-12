@@ -7,7 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Program.fs"/>
+        <Compile Include="State.fs" />
+        <Compile Include="FindBuilder.fs" />
+        <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,6 +18,7 @@
         <PackageReference Include="Fable.Elmish.HMR" Version="7.0.0" />
         <PackageReference Include="Fable.Elmish.React" Version="4.0.0" />
         <PackageReference Include="Fable.React" Version="9.4.0" />
+        <PackageReference Include="Fable.React.Types" Version="18.4.0" />
     </ItemGroup>
 
 </Project>
