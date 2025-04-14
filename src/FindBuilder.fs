@@ -18,7 +18,7 @@ module FindBuilder =
     let specialCharsRx = Regex(@"([ \\@$\*&\(\)!#\[\]])", RegexOptions.ECMAScript)
         
     let escapePath (path: string) : string =
-        specialCharsRx.Replace(path, "\\$1")
+        specialCharsRx.Replace(path.Trim(), "\\$1")
     
     /// Calculate actual number of days since X months ago.
     let monthsToDays (sinceDate: DateTime) (months: int) : int =
@@ -54,8 +54,8 @@ module FindBuilder =
     
     let namePattern (style: PatternStyle) (pattern: string) : string =
         match style with
-        | Glob when pattern.Length > 0 -> $" -name '{pattern}'"
-        | Regexp when pattern.Length > 0  -> $" -regex '{pattern}'"
+        | Glob when pattern.Length > 0 -> $" -name '{pattern.Trim()}'"
+        | Regexp when pattern.Length > 0  -> $" -regex '{pattern.Trim()}'"
         | _ -> ""
         
     let typeParameter targetType =
