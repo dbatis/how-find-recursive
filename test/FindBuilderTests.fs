@@ -10,19 +10,13 @@ open HowFindRecursive
 module FindBuilderTests =
     
     [<Fact>]
-    let ``Must escape special characters`` () =
-        FindBuilder.escapePath "Replace [brackets]" |> should equal @"Replace\ \[brackets\]"
-        FindBuilder.escapePath @"file\backslashes\.txt" |> should equal @"file\\backslashes\\.txt"
-        FindBuilder.escapePath "file @*&$()!#[]:.txt" |> should equal @"file\ \@\*\&\$\(\)\!\#\[\]:.txt"        
-
-    [<Fact>]
     let ``Copy and move action must escape destination`` () =
         let dest = {dest = "Replace [brackets]"; preserveStructure = false}
         FindBuilder.appendAction (Action.Copy dest) "." "-exec" "find" 
         |> should equal @"find -exec cp -rf {} Replace\ \[brackets\] \;"
     
         FindBuilder.appendAction (Action.Move dest) "." "-exec" "find"
-        |> should equal @"find -exec mv {} Replace\ \[brackets\] \;"
+        |> should equal @"find -exec mv -f {} Replace\ \[brackets\] \;"
 
     [<Fact>]
     let ``Do not do anything if dest is empty`` () =

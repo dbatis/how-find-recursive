@@ -3,6 +3,7 @@
 open System
 open System.Text.RegularExpressions
 open HowFindRecursive.State
+open Microsoft.VisualBasic.CompilerServices
 
 /// <summary>
 /// Functions to build command for <code>find</code> tool.
@@ -14,12 +15,6 @@ open HowFindRecursive.State
 [<RequireQualifiedAccess>]
 module FindBuilder =
 
-    /// Regular expression to capture characters in shell that need escaping
-    let specialCharsRx = Regex(@"([ \\@$\*&\(\)!#\[\]])", RegexOptions.ECMAScript)
-        
-    let escapePath (path: string) : string =
-        specialCharsRx.Replace(path.Trim(), "\\$1")
-    
     /// Calculate actual number of days since X months ago.
     let monthsToDays (sinceDate: DateTime) (months: int) : int =
         sinceDate - sinceDate.AddMonths(0 - months) |> _.Days
@@ -64,9 +59,6 @@ module FindBuilder =
         | File -> " -type f"
         | _ -> ""
 
-    let (|IsPreserve|_|) (attr: Destination) =
-        attr.preserveStructure
-
     /// <summary>
     /// Append the action part. Some actions are just additions in the end of the string, others
     /// encapsulate the <code>find</code> operation.
@@ -80,14 +72,14 @@ module FindBuilder =
         | List -> $"{findStr} | less"
         | Delete -> $"{findStr} {execParam} rm -rf {{}} \;"
         | MoveToTrash -> $"{findStr} {execParam} gio trash {{}} \;"
+        | Copy attr when attr.dest.Length > 0 && attr.preserveStructure ->
+            $"rsync -av --progress --file-from <({findStr}) {sourceFolder} {Utils.escapeLinuxPath attr.dest}"
         | Copy attr when attr.dest.Length > 0 ->
-            match attr with
-            | IsPreserve -> $"rsync -av --progress --file-from <({findStr}) {sourceFolder} {escapePath attr.dest}"
-            | _ -> $"{findStr} {execParam} cp -rf {{}} {escapePath attr.dest} \;"
+            $"{findStr} {execParam} cp -rf {{}} {Utils.escapeLinuxPath attr.dest} \;"
+        | Move attr when attr.dest.Length > 0 && attr.preserveStructure ->
+            $"rsync -av --remove-source-files --prune-empty-dirs --progress --file-from <({findStr}) {sourceFolder} {Utils.escapeLinuxPath attr.dest}"
         | Move attr when attr.dest.Length > 0 ->
-            match attr with
-            | IsPreserve -> $"rsync -av --remove-source-files --prune-empty-dirs --progress --file-from <({findStr}) {sourceFolder} {escapePath attr.dest}"
-            | _ -> $"{findStr} {execParam} mv {{}} {escapePath attr.dest} \;"
+            $"{findStr} {execParam} mv -f {{}} {Utils.escapeLinuxPath attr.dest} \;"
         | _ -> ""
     
     /// <summary>
@@ -96,7 +88,7 @@ module FindBuilder =
     /// <param name="sinceDate">Date to convert to days since, when required</param>
     /// <param name="rules">Find command parameters</param>
     let build sinceDate rules =
-        let folder = escapePath (if rules.folder.Length > 0 then rules.folder else ".")
+        let folder = Utils.escapeLinuxPath (if rules.folder.Length > 0 then rules.folder else ".")
         let name = namePattern rules.style rules.pattern
         let ttype = typeParameter rules.targetType
         let modified = modifiedParameter sinceDate rules.lastModified

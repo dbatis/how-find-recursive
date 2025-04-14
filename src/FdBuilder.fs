@@ -43,7 +43,7 @@ module FdBuilder =
     /// </summary>
     /// <param name="rules">Find command parameters</param>
     let build rules =
-        let folder = FindBuilder.escapePath (if rules.folder.Length > 0 then rules.folder else ".")
+        let folder = Utils.escapeLinuxPath (if rules.folder.Length > 0 then rules.folder else ".")
         let name = namePattern rules.style rules.pattern
         let ttype = (FindBuilder.typeParameter rules.targetType).Replace("-t", "--t")
         let modified = modifiedParameter rules.lastModified

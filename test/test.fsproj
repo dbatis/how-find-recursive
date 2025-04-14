@@ -11,6 +11,7 @@
     <ItemGroup>
         <Compile Include="FdBuilderTests.fs" />
         <Compile Include="FindBuilderTests.fs" />
+        <Compile Include="UtilsTests.fs" />
     </ItemGroup>
 
     <ItemGroup>
