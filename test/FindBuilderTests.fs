@@ -18,19 +18,19 @@ module FindBuilderTests =
     [<Fact>]
     let ``Copy and move action must escape destination`` () =
         let dest = {dest = "Replace [brackets]"; preserveStructure = false}
-        FindBuilder.appendAction (Action.Copy dest) "." "find" 
+        FindBuilder.appendAction (Action.Copy dest) "." "-exec" "find" 
         |> should equal @"find -exec cp -rf {} Replace\ \[brackets\] \;"
     
-        FindBuilder.appendAction (Action.Move dest) ".""find"
+        FindBuilder.appendAction (Action.Move dest) "." "-exec" "find"
         |> should equal @"find -exec mv {} Replace\ \[brackets\] \;"
 
     [<Fact>]
     let ``Do not do anything if dest is empty`` () =
         let dest = {dest = ""; preserveStructure = false}
-        FindBuilder.appendAction (Action.Copy dest) "." "find"
+        FindBuilder.appendAction (Action.Copy dest) "." "-exec" "find"
         |> should equal ""
 
-        FindBuilder.appendAction (Action.Move dest) ".""find"
+        FindBuilder.appendAction (Action.Move dest) "." "-exec" "find"
         |> should equal ""
 
     [<Fact>]
@@ -94,3 +94,7 @@ module FindBuilderTests =
                 }
         FindBuilder.build steadyDate data
         |> should equal @"rsync -av --progress --file-from <(find /home/user/downloads -regex '.+\.log') /home/user/downloads /home/user/documents"
+
+        data <- { data with targetType = File }
+        FindBuilder.build steadyDate data
+        |> should equal @"rsync -av --progress --file-from <(find /home/user/downloads -regex '.+\.log' -type f) /home/user/downloads /home/user/documents"

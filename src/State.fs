@@ -6,7 +6,7 @@ module State =
     
     // Enums
     [<StringEnum>] type PatternStyle = Glob | Regexp
-    [<StringEnum>] type TimeUnit = Minutes | Hours | Days | Months | Years
+    [<StringEnum>] type TimeUnit = Minutes | Hours | Days | Weeks | Months | Years
     [<StringEnum>] type TargetType = File | Directory | All
     [<StringEnum>] type Output = Find | Fd | Powershell
     [<StringEnum>] type TimeQualifier = EarlierThan | Exactly | LaterThan

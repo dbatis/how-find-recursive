@@ -20,9 +20,6 @@ module FindBuilder =
     let escapePath (path: string) : string =
         specialCharsRx.Replace(path, "\\$1")
     
-    let (|IsPreserve|_|) (attr: Destination) =
-        attr.preserveStructure
-    
     /// Calculate actual number of days since X months ago.
     let monthsToDays (sinceDate: DateTime) (months: int) : int =
         sinceDate - sinceDate.AddMonths(0 - months) |> _.Days
@@ -41,6 +38,7 @@ module FindBuilder =
         | Minutes -> $" -{prefix}min {modifier}{date.number}"
         | Hours -> $" -{prefix}min {modifier}{date.number * 60}"
         | Days -> $" -{prefix}time {modifier}{date.number}"
+        | Weeks -> $" --{prefix}time {modifier}{date.number * 7}"
         | Months -> $" -{prefix}time {modifier}{date.number |> monthsToDays sinceDate}"
         | Years -> $" -{prefix}time {modifier}{date.number |> yearsToDays sinceDate}"
     
@@ -66,23 +64,30 @@ module FindBuilder =
         | File -> " -type f"
         | _ -> ""
 
+    let (|IsPreserve|_|) (attr: Destination) =
+        attr.preserveStructure
+
     /// <summary>
     /// Append the action part. Some actions are just additions in the end of the string, others
     /// encapsulate the <code>find</code> operation.
     /// </summary>
-    let appendAction action sourceFolder findStr =
+    /// <param name="action">What to do with found files</param>
+    /// <param name="sourceFolder">Give source folder again for rsync</param>
+    /// <param name="execParam">Style of exec param, since find and fd differ.</param>
+    /// <param name="findStr">The rest of the find command, as its location will differ.</param>
+    let appendAction action sourceFolder execParam findStr =
         match action with
         | List -> $"{findStr} | less"
-        | Delete -> $"{findStr} -exec rm -rf {{}} \;"
-        | MoveToTrash -> $"{findStr} -exec gio trash {{}} \;"
+        | Delete -> $"{findStr} {execParam} rm -rf {{}} \;"
+        | MoveToTrash -> $"{findStr} {execParam} gio trash {{}} \;"
         | Copy attr when attr.dest.Length > 0 ->
             match attr with
             | IsPreserve -> $"rsync -av --progress --file-from <({findStr}) {sourceFolder} {escapePath attr.dest}"
-            | _ -> $"{findStr} -exec cp -rf {{}} {escapePath attr.dest} \;"
+            | _ -> $"{findStr} {execParam} cp -rf {{}} {escapePath attr.dest} \;"
         | Move attr when attr.dest.Length > 0 ->
             match attr with
             | IsPreserve -> $"rsync -av --remove-source-files --prune-empty-dirs --progress --file-from <({findStr}) {sourceFolder} {escapePath attr.dest}"
-            | _ -> $"{findStr} -exec mv {{}} {escapePath attr.dest} \;"
+            | _ -> $"{findStr} {execParam} mv {{}} {escapePath attr.dest} \;"
         | _ -> ""
     
     /// <summary>
@@ -93,9 +98,10 @@ module FindBuilder =
     let build sinceDate rules =
         let folder = escapePath (if rules.folder.Length > 0 then rules.folder else ".")
         let name = namePattern rules.style rules.pattern
+        let ttype = typeParameter rules.targetType
         let modified = modifiedParameter sinceDate rules.lastModified
         let accessed = accessedParameter sinceDate rules.lastAccessed
-        $"find {folder}{name}{modified}{accessed}" |> appendAction rules.action folder
+        $"find {folder}{name}{ttype}{modified}{accessed}" |> appendAction rules.action folder "-exec"
         
     
     /// <summary>
