@@ -1,7 +1,7 @@
 ﻿namespace HowFindRecursiveTests
 
 open System
-open HowFindRecursive.State
+open HowFindRecursive.BuilderInput
 open Xunit
 open FsUnit
 

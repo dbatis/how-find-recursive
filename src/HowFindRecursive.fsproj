@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <Compile Include="Utils.fs" />
-        <Compile Include="State.fs" />
+        <Compile Include="BuilderInput.fs" />
         <Compile Include="FindBuilder.fs" />
         <Compile Include="FdBuilder.fs" />
         <Compile Include="PowershellBuilder.fs" />

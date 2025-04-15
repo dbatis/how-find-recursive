@@ -2,7 +2,7 @@
 
 open System
 open System.Text.RegularExpressions
-open HowFindRecursive.State
+open HowFindRecursive.BuilderInput
 open Microsoft.VisualBasic.CompilerServices
 
 /// <summary>

@@ -1,7 +1,7 @@
 ﻿namespace HowFindRecursive
 
 open System.Text.RegularExpressions
-open HowFindRecursive.State
+open HowFindRecursive.BuilderInput
 
 /// <summary>
 /// Functions to build command for Windows PowerShell.

@@ -1,7 +1,7 @@
 ﻿namespace HowFindRecursive
 
 open System
-open HowFindRecursive.State
+open HowFindRecursive.BuilderInput
 
 /// <summary>
 /// Functions for <code>fd</code> tool. Reuses <code>FindBuilder</code> when result is the same between

@@ -2,7 +2,7 @@
 
 open Fable.Core
 
-module State =
+module BuilderInput =
     
     // Enums
     [<StringEnum>] type PatternStyle = Glob | Regexp
