@@ -37,9 +37,10 @@ module BuilderInput =
         style: PatternStyle
         targetType: TargetType
         pattern: string
-        lastModified: DateSeek option
-        lastAccessed: DateSeek option
+        lastModified: DateSeek
+        lastAccessed: DateSeek
         action: Action
     }
     
+    let emptyDateField = {qualifier = EarlierThan; number = 0; unit = Days}
     

@@ -28,14 +28,16 @@ module PowershellBuilder =
         | Months -> $" | ?{{ $_.{fileProperty} {comparator} (Get-Date).AddMonths(-{date.number}) }}"
         | Years -> $" | ?{{ $_.{fileProperty} {comparator} (Get-Date).AddYears(-{date.number}) }}"
     
-    let modifiedParameter (date: DateSeek option) : string =
-        match date with
-        | Some d when d.qualifier <> Exactly -> timeParam "LastWriteTime" d
+    let modifiedParameter (date: DateSeek) : string =
+        match date.number with
+        | 0 -> ""
+        | _ when date.qualifier <> Exactly -> timeParam "LastWriteTime" date
         | _ -> ""
     
-    let accessedParameter (date: DateSeek option) : string =
-        match date with
-        | Some d when d.qualifier <> Exactly -> timeParam "LastAccessTime" d
+    let accessedParameter (date: DateSeek) : string =
+        match date.number with
+        | 0 -> ""
+        | _ when date.qualifier <> Exactly -> timeParam "LastAccessTime" date
         | _ -> ""
 
     /// Build glob pattern, which is a Get-ChildItem argument

@@ -12,19 +12,19 @@ module FdBuilderTests =
 
     [<Fact>]
     let ``Set date parameters`` () =
-        Some {qualifier=EarlierThan; number = 3; unit = Days}
+        {qualifier=EarlierThan; number = 3; unit = Days}
         |> FdBuilder.modifiedParameter
         |> should equal " --changed-before 3days"
 
-        Some {qualifier=EarlierThan; number = 4; unit = Months}
+        {qualifier=EarlierThan; number = 4; unit = Months}
                 |> FdBuilder.modifiedParameter
                 |> should equal " --changed-before 4months"
         
-        Some {qualifier=EarlierThan; number = 3; unit = Hours}
+        {qualifier=EarlierThan; number = 3; unit = Hours}
         |> FdBuilder.modifiedParameter
         |> should equal " --changed-before 3hours"
 
-        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        {qualifier=LaterThan; number = 3; unit = Hours}
         |> FdBuilder.modifiedParameter
         |> should equal " --changed-within 3hours"
         
@@ -35,8 +35,8 @@ module FdBuilderTests =
             style = Glob
             targetType = All
             pattern = "*.jpg"
-            lastModified = Some { qualifier=EarlierThan; number = 3; unit = Days }
-            lastAccessed = None
+            lastModified = { qualifier=EarlierThan; number = 3; unit = Days }
+            lastAccessed = emptyDateField
             action = Delete
         }
         
@@ -49,7 +49,7 @@ module FdBuilderTests =
         |> should equal @"fd --regex '.+\.log' /home/user/downloads --changed-before 3days --exec rm -rf {} \;"
 
         data <- { data with
-                    lastModified = None
+                    lastModified = emptyDateField
                     action = Copy {dest="/home/user/documents";preserveStructure=false}
                 }
         FdBuilder.build data

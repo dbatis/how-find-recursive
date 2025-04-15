@@ -4,7 +4,7 @@ open System
 open HowFindRecursive.BuilderInput
 
 /// <summary>
-/// Functions for <code>fd</code> tool. Reuses <code>FindBuilder</code> when result is the same between
+/// Functions for <c>fd</c> tool. Reuses <c>FindBuilder</c> when result is the same between
 /// the two commands.
 /// </summary>
 [<RequireQualifiedAccess>]
@@ -16,21 +16,22 @@ module FdBuilder =
         | Regexp when pattern.Length > 0  -> $"--regex '{pattern.Trim()}'"
         | _ -> "'.*'" // since we need a pattern before folder in fd
 
-    let modifiedParameter (date: DateSeek option) : string =
-        match date with
-        | Some d when d.qualifier <> Exactly ->
-            let param = match d.qualifier with
+    let modifiedParameter (date: DateSeek) : string =
+        match date.number with
+        | 0 -> ""
+        | _ when date.qualifier <> Exactly ->
+            let param = match date.qualifier with
                         | EarlierThan -> "--changed-before"
                         | LaterThan -> "--changed-within"
                         | Exactly -> "" // not supported
                        
-            match d.unit with
-            | Minutes -> $" {param} {d.number}mins"
-            | Hours -> $" {param} {d.number}hours"
-            | Days -> $" {param} {d.number}days"
-            | Weeks -> $" {param} {d.number}weeks"
-            | Months -> $" {param} {d.number}months"
-            | Years -> $" {param} {d.number}years"
+            match date.unit with
+            | Minutes -> $" {param} {date.number}mins"
+            | Hours -> $" {param} {date.number}hours"
+            | Days -> $" {param} {date.number}days"
+            | Weeks -> $" {param} {date.number}weeks"
+            | Months -> $" {param} {date.number}months"
+            | Years -> $" {param} {date.number}years"
                     
         | _ -> ""
 

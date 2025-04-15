@@ -12,27 +12,27 @@ module PowershellBuilderTests =
     [<Fact>]
     let ``Set date parameters`` () =
         
-        Some {qualifier=EarlierThan; number = 3; unit = Days}
+        {qualifier=EarlierThan; number = 3; unit = Days}
         |> PowershellBuilder.modifiedParameter 
         |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-3) }"
 
-        Some {qualifier=EarlierThan; number = 4; unit = Months}
+        {qualifier=EarlierThan; number = 4; unit = Months}
                 |> PowershellBuilder.modifiedParameter 
                 |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddMonths(-4) }"
         
-        Some {qualifier=EarlierThan; number = 4; unit = Weeks}
+        {qualifier=EarlierThan; number = 4; unit = Weeks}
                 |> PowershellBuilder.modifiedParameter 
                 |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-28) }"
                 
-        Some {qualifier=EarlierThan; number = 3; unit = Hours}
+        {qualifier=EarlierThan; number = 3; unit = Hours}
         |> PowershellBuilder.modifiedParameter 
         |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddHours(-3) }"
 
-        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        {qualifier=LaterThan; number = 3; unit = Hours}
         |> PowershellBuilder.modifiedParameter 
         |> should equal " | ?{ $_.LastWriteTime -gt (Get-Date).AddHours(-3) }"
 
-        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        {qualifier=LaterThan; number = 3; unit = Hours}
         |> PowershellBuilder.accessedParameter 
         |> should equal " | ?{ $_.LastAccessTime -gt (Get-Date).AddHours(-3) }"
 
@@ -52,8 +52,8 @@ module PowershellBuilderTests =
             style = Glob
             targetType = All
             pattern = "*.jpg"
-            lastModified = None
-            lastAccessed = Some { qualifier=EarlierThan; number = 3; unit = Days }
+            lastModified = emptyDateField
+            lastAccessed = { qualifier=EarlierThan; number = 3; unit = Days }
             action = Delete
         }
         

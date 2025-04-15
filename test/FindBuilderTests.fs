@@ -31,27 +31,27 @@ module FindBuilderTests =
     let ``Set date parameters`` () =
         let steadyDate = new DateTime(2025, 4, 20)
         
-        Some {qualifier=EarlierThan; number = 3; unit = Days}
+        {qualifier=EarlierThan; number = 3; unit = Days}
         |> FindBuilder.modifiedParameter steadyDate
         |> should equal " -mtime +3"
 
-        Some {qualifier=EarlierThan; number = 4; unit = Months}
+        {qualifier=EarlierThan; number = 4; unit = Months}
                 |> FindBuilder.modifiedParameter steadyDate
                 |> should equal " -mtime +121"
         
-        Some {qualifier=EarlierThan; number = 3; unit = Hours}
+        {qualifier=EarlierThan; number = 3; unit = Hours}
         |> FindBuilder.modifiedParameter steadyDate
         |> should equal " -mmin +180"
 
-        Some {qualifier=Exactly; number = 3; unit = Hours}
+        {qualifier=Exactly; number = 3; unit = Hours}
         |> FindBuilder.modifiedParameter steadyDate
         |> should equal " -mmin 180"
 
-        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        {qualifier=LaterThan; number = 3; unit = Hours}
         |> FindBuilder.modifiedParameter steadyDate
         |> should equal " -mmin -180"
 
-        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        {qualifier=LaterThan; number = 3; unit = Hours}
         |> FindBuilder.accessedParameter steadyDate
         |> should equal " -amin -180"
 
@@ -63,8 +63,8 @@ module FindBuilderTests =
             style = Glob
             targetType = All
             pattern = "*.jpg"
-            lastModified = None
-            lastAccessed = Some { qualifier=EarlierThan; number = 3; unit = Days }
+            lastModified = emptyDateField
+            lastAccessed = { qualifier=EarlierThan; number = 3; unit = Days }
             action = Delete
         }
         
@@ -77,7 +77,7 @@ module FindBuilderTests =
         |> should equal @"find /home/user/downloads -regex '.+\.log' -atime +3 -exec rm -rf {} \;"
 
         data <- { data with
-                    lastAccessed = None
+                    lastAccessed = emptyDateField
                     action = Copy {dest="/home/user/documents";preserveStructure=false}
                 }
         FindBuilder.build steadyDate data

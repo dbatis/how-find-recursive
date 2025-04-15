@@ -6,10 +6,10 @@ open HowFindRecursive.BuilderInput
 open Microsoft.VisualBasic.CompilerServices
 
 /// <summary>
-/// Functions to build command for <code>find</code> tool.
+/// Functions to build command for <c>find</code> tool.
 /// </summary>
 /// <remarks>
-/// Some functions are re-used in <code>fd</code> module,
+/// Some functions are re-used in <c>fd</code> module,
 /// when there is no difference between these tools
 /// </remarks>
 [<RequireQualifiedAccess>]
@@ -37,15 +37,15 @@ module FindBuilder =
         | Months -> $" -{prefix}time {modifier}{date.number |> monthsToDays sinceDate}"
         | Years -> $" -{prefix}time {modifier}{date.number |> yearsToDays sinceDate}"
     
-    let modifiedParameter (sinceDate: DateTime) (date: DateSeek option) : string =
-        match date with
-        | Some d -> timeParam sinceDate "m" d
-        | _ -> ""
+    let modifiedParameter (sinceDate: DateTime) (date: DateSeek) : string =
+        match date.number with
+        | 0 -> ""
+        | _ -> timeParam sinceDate "m" date
         
-    let accessedParameter (sinceDate: DateTime) (date: DateSeek option) : string =
-        match date with
-        | Some d -> timeParam sinceDate "a" d
-        | _ -> ""
+    let accessedParameter (sinceDate: DateTime) (date: DateSeek) : string =
+        match date.number with
+        | 0 -> ""
+        | _ -> timeParam sinceDate "a" date
     
     let namePattern (style: PatternStyle) (pattern: string) : string =
         match style with
@@ -61,7 +61,7 @@ module FindBuilder =
 
     /// <summary>
     /// Append the action part. Some actions are just additions in the end of the string, others
-    /// encapsulate the <code>find</code> operation.
+    /// encapsulate the <c>find</code> operation.
     /// </summary>
     /// <param name="action">What to do with found files</param>
     /// <param name="sourceFolder">Give source folder again for rsync</param>
@@ -97,7 +97,7 @@ module FindBuilder =
         
     
     /// <summary>
-    /// Impure variant of <code>build()</code> which uses current date as input.
+    /// Impure variant of <c>build()</code> which uses current date as input.
     /// </summary>
     /// <param name="rules">Find command parameters</param>
     let buildImpure rules = build DateTime.Now rules
