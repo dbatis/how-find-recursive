@@ -32,7 +32,7 @@ module BuilderInput =
     }
     
     /// Defines the rules to find files
-    type FindParameters = {
+    type BuildParams = {
         folder: string
         style: PatternStyle
         targetType: TargetType
