@@ -18,7 +18,7 @@ module FdBuilder =
 
     let modifiedParameter (date: DateSeek option) : string =
         match date with
-        | Some d ->
+        | Some d when d.qualifier <> Exactly ->
             let param = match d.qualifier with
                         | EarlierThan -> "--changed-before"
                         | LaterThan -> "--changed-within"
