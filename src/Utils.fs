@@ -32,7 +32,7 @@ module Utils =
             | [x] -> x |> regexReplace stripMarginRegex "" |> regexReplace onlyWhitepaceRegex "" |> addToList acc
             | x :: tail -> strip (x |> regexReplace stripMarginRegex "" |> addToList acc) tail
         
-        str.ReplaceLineEndings().Split(System.Environment.NewLine)
+        str.Split(System.Environment.NewLine)
         |> Array.toList
         |> strip []
         |> String.concat System.Environment.NewLine
@@ -48,3 +48,8 @@ module Utils =
     /// Escape path characters as required for Powershell. Will put path inside quotes.
     let escapePowershellPath (path: string) : string =
         "'" + specialPSCharsRx.Replace(path.Trim(), "`$1") + "'"
+
+    let tryIntegerOrZero (maybeNumber: string) : int =
+        match Int32.TryParse maybeNumber with
+        | true, result -> result
+        | _, _ -> 0    

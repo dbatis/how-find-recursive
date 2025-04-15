@@ -3,7 +3,6 @@
 open System
 open System.Text.RegularExpressions
 open HowFindRecursive.BuilderInput
-open Microsoft.VisualBasic.CompilerServices
 
 /// <summary>
 /// Functions to build command for <c>find</code> tool.
