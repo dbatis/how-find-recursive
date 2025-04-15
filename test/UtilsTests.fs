@@ -1,24 +1,23 @@
 ﻿namespace HowFindRecursiveTests
 
 open System
-open FsUnitTyped
 open HowFindRecursive.State
 open Xunit
 open FsUnit
 
 open HowFindRecursive
 
-
 module UtilsTests =
     
+    [<Fact>]
     let ``Strip margins before pipe character`` () =
         let mlString = """ | Line 1
-                       |     Line 2
+                       |     Line 2 | not deleted
                        """
 
-        let expected = " Line 1\n     Line 2\n"
+        let expected = " Line 1" + Environment.NewLine + "     Line 2 | not deleted" + Environment.NewLine
         
-        mlString |> Utils.stripMargin |> shouldEqual expected
+        mlString |> Utils.stripMargin |> should equal expected
     
     [<Fact>]
     let ``Must escape special characters for Linux shells`` () =
