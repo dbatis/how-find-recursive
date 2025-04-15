@@ -11,6 +11,7 @@
         <Compile Include="State.fs" />
         <Compile Include="FindBuilder.fs" />
         <Compile Include="FdBuilder.fs" />
+        <Compile Include="PowershellBuilder.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

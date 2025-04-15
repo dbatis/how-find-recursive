@@ -1,0 +1,71 @@
+﻿namespace HowFindRecursiveTests
+
+open System
+open HowFindRecursive.State
+open Xunit
+open FsUnit
+
+open HowFindRecursive
+
+module PowershellBuilderTests =
+    
+    [<Fact>]
+    let ``Set date parameters`` () =
+        
+        Some {qualifier=EarlierThan; number = 3; unit = Days}
+        |> PowershellBuilder.modifiedParameter 
+        |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-3) }"
+
+        Some {qualifier=EarlierThan; number = 4; unit = Months}
+                |> PowershellBuilder.modifiedParameter 
+                |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddMonths(-4) }"
+        
+        Some {qualifier=EarlierThan; number = 4; unit = Weeks}
+                |> PowershellBuilder.modifiedParameter 
+                |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-28) }"
+                
+        Some {qualifier=EarlierThan; number = 3; unit = Hours}
+        |> PowershellBuilder.modifiedParameter 
+        |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddHours(-3) }"
+
+        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        |> PowershellBuilder.modifiedParameter 
+        |> should equal " | ?{ $_.LastWriteTime -gt (Get-Date).AddHours(-3) }"
+
+        Some {qualifier=LaterThan; number = 3; unit = Hours}
+        |> PowershellBuilder.accessedParameter 
+        |> should equal " | ?{ $_.LastAccessTime -gt (Get-Date).AddHours(-3) }"
+
+    [<Fact>]
+    let ``Do not do anything if dest is empty`` () =
+        let dest = {dest = ""; preserveStructure = false}
+        PowershellBuilder.appendAction (Action.Copy dest) "." "find"
+        |> should equal ""
+
+        PowershellBuilder.appendAction (Action.Move dest) "." "find"
+        |> should equal ""
+
+    [<Fact>]
+    let ``Build correct find commands`` () =
+        let mutable data = {
+            folder = @"c:\users\my user\Downloads\test"
+            style = Glob
+            targetType = All
+            pattern = "*.jpg"
+            lastModified = None
+            lastAccessed = Some { qualifier=EarlierThan; number = 3; unit = Days }
+            action = Delete
+        }
+        
+        PowershellBuilder.build data
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Include '*.jpg' | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        
+        data <- { data with style = Regexp; pattern = @".+\.log"}
+        
+        PowershellBuilder.build data
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        
+        data <- { data with targetType = Directory }
+        
+        PowershellBuilder.build data
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Directory | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }" 
