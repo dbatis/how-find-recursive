@@ -41,7 +41,7 @@ module UiModel =
     let init() =
         {
             buildParams = {
-                folder = "."
+                folder = ""
                 style = Glob
                 targetType = File
                 pattern = ""

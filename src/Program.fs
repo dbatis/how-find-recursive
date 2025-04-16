@@ -5,37 +5,40 @@ open Fable.React
 open Fable.React.Props
 open Elmish.React
 open Elmish
+open HowFindRecursive
+open HowFindRecursive.UiViews
 
-type Model = int
-
-type Msg =
-    | Increment
-    | Decrement
-
-let init() = 0
-
-let update (msg: Msg) count =
-    match msg with
-    | Increment -> count + 1
-    | Decrement -> count - 1
-
-let btn model dispatch =
-    button [ OnClick (fun _ -> dispatch Increment); ClassName "btn btn-primary" ] [ str "+" ]
-
-let view model dispatch =
-    div []
-        [
-            button
-                [ OnClick (fun _ -> dispatch Decrement)
-                  ClassName "btn btn-primary"
+let mainView model dispatch =
+    div [] [
+        div [ ClassName "container text-center row justify-content-md-center" ] [
+            div [ ClassName "col-lg-8 col-md-12" ] [
+                h2 [ ClassName "mb-2" ] [ str "Parameters" ]
+                form [ ClassName "text-start align-text-top" ] [
+                    sourceFolderView model dispatch
+                    patternView model dispatch
+                    targetTypeView model dispatch
+                    lastModifiedView model dispatch
+                    lastAccessedView model dispatch
+                    actionView model dispatch
+                    targetDirView model dispatch
+                    targetPreserveView model dispatch
                 ]
-                [ str "-" ]
-            div [] [ str (sprintf "%A" model) ]
-            lazyView2 btn model dispatch
+            ]
         ]
+        div [ ClassName "container row" ] [
+            div [ ClassName "col-lg-12" ] [
+                h2 [ ClassName "mb-2 text-center" ] [ str "Output" ]
+                form [ ClassName "text-start align-text-top" ] [
+                    outputSelectView model dispatch
+                    outputView model dispatch
+                    copyToClipboardView model dispatch
+                ]
+            ]
+        ]
+    ]
 
 open Elmish.HMR
 
-Program.mkSimple init update view
+Program.mkProgram UiModel.init UiModel.update mainView
 |> Program.withReactSynchronous "main-app"
 |> Program.run
