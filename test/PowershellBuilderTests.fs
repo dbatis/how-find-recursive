@@ -58,14 +58,14 @@ module PowershellBuilderTests =
         }
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Include '*.jpg' | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse -Include '*.jpg' | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
         
         data <- { data with style = Regexp; pattern = @".+\.log"}
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
         
         data <- { data with targetType = Directory }
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Directory | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }" 
+        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse -Directory | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }" 

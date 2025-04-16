@@ -43,7 +43,7 @@ module PowershellBuilder =
     /// Build glob pattern, which is a Get-ChildItem argument
     let globPattern action =
         match action.style with
-        | Glob -> $" -Include '{action.pattern}'"
+        | Glob when action.pattern <> "" -> $" -Include '{action.pattern}'"
         | _ -> ""
     
     /// Build regex pattern, which is a piped filter
@@ -120,10 +120,10 @@ module PowershellBuilder =
     /// </summary>
     /// <param name="rules">Find command parameters</param>
     let build rules =
-        let folder = if rules.folder.Length > 0 then $" -Path {Utils.escapePowershellPath rules.folder}" else "'.'"
+        let folder = if rules.folder.Length > 0 then $"{Utils.escapePowershellPath rules.folder}" else "'.'"
         let glob = globPattern rules
         let regex = regexPattern rules
         let ttype = typeParameter rules.targetType
         let modified = modifiedParameter rules.lastModified
         let accessed = accessedParameter rules.lastAccessed
-        $"Get-ChildItem{folder}{glob}{ttype}{regex}{modified}{accessed}" |> appendAction rules.action folder
+        $"Get-ChildItem -Path {folder} -Recurse{glob}{ttype}{regex}{modified}{accessed}" |> appendAction rules.action folder
