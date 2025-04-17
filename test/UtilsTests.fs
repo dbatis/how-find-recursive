@@ -41,3 +41,15 @@ module UtilsTests =
         let expected = String.replicate 10 "a" + " " + String.replicate 5 "b" + " \\\n" + String.replicate 25 "c" + " \\\n" + String.replicate 41 "d"
         Utils.shellWrap "\\" 40 parts
         |> should equal expected
+        
+    let ``Must wrap lines based on length of last line`` () =
+        let parts = [
+            String.replicate 50 "a"
+            String.replicate 5 "b"
+            String.replicate 25 "c"
+            String.replicate 41 "d"
+        ]
+        let expected = String.replicate 50 "a" + " \\\n " + String.replicate 5 "b" + " " + String.replicate 25 "c" + " \\\n" + String.replicate 41 "d"
+        Utils.shellWrap "\\" 40 parts
+        |> should equal expected
+        
