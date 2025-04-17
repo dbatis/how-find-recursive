@@ -67,8 +67,11 @@ module Utils =
             | [] -> acc
             | head :: tail ->
                 if String.length acc = 0 then head
-                elif (String.length acc) + (String.length head) >= length then acc + " " + wrapChar + "\n" + head
-                else acc + " " + head
+                elif String.length head = 0 then acc
+                else
+                    let lastLine = acc.Split [| '\n' |] |> Array.last
+                    if (String.length lastLine) + (String.length head) >= length then acc + " " + wrapChar + "\n" + head
+                    else acc + " " + head
                 |> doWrap wrapChar length tail
         doWrap wrapChar length parts ""
     

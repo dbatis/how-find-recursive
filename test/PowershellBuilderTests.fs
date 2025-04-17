@@ -14,36 +14,36 @@ module PowershellBuilderTests =
         
         {qualifier=EarlierThan; number = 3; unit = Days}
         |> PowershellBuilder.modifiedParameter 
-        |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-3) }"
+        |> should equal "| ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-3) }"
 
         {qualifier=EarlierThan; number = 4; unit = Months}
                 |> PowershellBuilder.modifiedParameter 
-                |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddMonths(-4) }"
+                |> should equal "| ?{ $_.LastWriteTime -lt (Get-Date).AddMonths(-4) }"
         
         {qualifier=EarlierThan; number = 4; unit = Weeks}
                 |> PowershellBuilder.modifiedParameter 
-                |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-28) }"
+                |> should equal "| ?{ $_.LastWriteTime -lt (Get-Date).AddDays(-28) }"
                 
         {qualifier=EarlierThan; number = 3; unit = Hours}
         |> PowershellBuilder.modifiedParameter 
-        |> should equal " | ?{ $_.LastWriteTime -lt (Get-Date).AddHours(-3) }"
+        |> should equal "| ?{ $_.LastWriteTime -lt (Get-Date).AddHours(-3) }"
 
         {qualifier=LaterThan; number = 3; unit = Hours}
         |> PowershellBuilder.modifiedParameter 
-        |> should equal " | ?{ $_.LastWriteTime -gt (Get-Date).AddHours(-3) }"
+        |> should equal "| ?{ $_.LastWriteTime -gt (Get-Date).AddHours(-3) }"
 
         {qualifier=LaterThan; number = 3; unit = Hours}
         |> PowershellBuilder.accessedParameter 
-        |> should equal " | ?{ $_.LastAccessTime -gt (Get-Date).AddHours(-3) }"
+        |> should equal "| ?{ $_.LastAccessTime -gt (Get-Date).AddHours(-3) }"
 
     [<Fact>]
     let ``Do not do anything if dest is empty`` () =
         let dest = {dest = ""; preserveStructure = false}
-        PowershellBuilder.appendAction (Action.Copy dest) "." "find"
-        |> should equal ""
+        PowershellBuilder.appendAction (Action.Copy dest) "." ["find"]
+        |> should be Empty
 
-        PowershellBuilder.appendAction (Action.Move dest) "." "find"
-        |> should equal ""
+        PowershellBuilder.appendAction (Action.Move dest) "." ["find"]
+        |> should be Empty
 
     [<Fact>]
     let ``Build correct find commands`` () =
@@ -58,14 +58,30 @@ module PowershellBuilderTests =
         }
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse -Include '*.jpg' | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        |> should equal (
+            [@"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse"
+             @"-Include '*.jpg'"
+             @"| ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) }"
+             @"| foreach { $_.Delete() }"
+            ] |> Utils.shellWrapPowershell 80)
         
         data <- { data with style = Regexp; pattern = @".+\.log"}
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }"
+        |> should equal (
+            [@"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse"
+             @"| ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' }"
+             @"| ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) }"
+             @"| foreach { $_.Delete() }"
+            ] |> Utils.shellWrapPowershell 80)
         
         data <- { data with targetType = Directory }
         
         PowershellBuilder.build data
-        |> should equal @"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse -Directory | ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' } | ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) } | foreach { $_.Delete() }" 
+        |> should equal (
+            [@"Get-ChildItem -Path 'c:\users\my user\Downloads\test' -Recurse"
+             @"-Directory"
+             @"| ?{ $baseDir=Convert-Path -LiteralPath 'c:\users\my user\Downloads\test'; $_.FullName.Replace($baseDir, '') -match '.+\.log' }"
+             @"| ?{ $_.LastAccessTime -lt (Get-Date).AddDays(-3) }"
+             @"| foreach { $_.Delete() }" 
+            ] |> Utils.shellWrapPowershell 80)
