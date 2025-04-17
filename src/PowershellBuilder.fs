@@ -83,7 +83,7 @@ module PowershellBuilder =
         [$"""$srcDir=Convert-Path -LiteralPath {sourceFolder}
             |$destDir=Convert-Path -LiteralPath {Utils.escapePowershellPath targetFolder}
             """ |> Utils.stripMargin
-        ] @ ["|"] @ findParts @ [copyForeach]
+        ] @ findParts @ [copyForeach]
 
     /// Literal with the PS code to move each item to destination directory. Expects to be used by copyCmd.
     let private moveForeach =
@@ -100,7 +100,7 @@ module PowershellBuilder =
         [$"""$srcDir=Convert-Path -LiteralPath {sourceFolder}
             |$destDir=Convert-Path -LiteralPath {Utils.escapePowershellPath targetFolder}
             """ |> Utils.stripMargin
-        ] @ ["|"] @ findParts @ [moveForeach]
+        ] @ findParts @ [moveForeach]
     
     let appendAction action sourceFolder findParts =
         match action with
