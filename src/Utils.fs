@@ -74,5 +74,5 @@ module Utils =
     
     let shellWrapBash= shellWrap "\\"
     
-    let shellWrapPowershell= shellWrap "|"
+    let shellWrapPowershell= shellWrap "`"
     
