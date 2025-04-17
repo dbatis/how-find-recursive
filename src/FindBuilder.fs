@@ -14,6 +14,10 @@ open HowFindRecursive.BuilderInput
 [<RequireQualifiedAccess>]
 module FindBuilder =
 
+    /// Helper function to always have a correct path
+    let pathOrDefault path =
+        if String.length path > 0 then Utils.escapeLinuxPath path else "."
+    
     /// Calculate actual number of days since X months ago.
     let monthsToDays (sinceDate: DateTime) (months: int) : int =
         sinceDate - sinceDate.AddMonths(0 - months) |> _.Days
@@ -71,17 +75,20 @@ module FindBuilder =
         | List -> findParts @ ["| less"]
         | Delete -> findParts @ [$"{execParam} rm -rf {{}} \;"]
         | MoveToTrash -> findParts @ [$"{execParam} gio trash {{}} \;"]
-        | Copy attr when attr.dest.Length > 0 && attr.preserveStructure ->
+        | Copy attr when attr.preserveStructure ->
+            let dest = pathOrDefault attr.dest
             // TODO: This is wrong due to source folder existing in both commands
-            ["rsync -av --progress --files-from <("] @ findParts @ [")"; sourceFolder; Utils.escapeLinuxPath attr.dest]
-        | Copy attr when attr.dest.Length > 0 ->
-            findParts @ [$"{execParam} cp -rf {{}} {Utils.escapeLinuxPath attr.dest} \;"]
-        | Move attr when attr.dest.Length > 0 && attr.preserveStructure ->
+            ["rsync -av --progress --files-from <("] @ findParts @ [")"; sourceFolder; dest]
+        | Copy attr -> // do not preserve structure
+            let dest = pathOrDefault attr.dest
+            findParts @ [$"{execParam} cp -rf {{}} {dest} \;"]
+        | Move attr when attr.preserveStructure ->
+            let dest = pathOrDefault attr.dest
             // TODO: This is wrong due to source folder existing in both commands
-            ["rsync -av --remove-source-files --prune-empty-dirs --progress --files-from <("] @ findParts @ [")"; sourceFolder; Utils.escapeLinuxPath attr.dest]
-        | Move attr when attr.dest.Length > 0 ->
-            findParts @ [$"{execParam} mv -f {{}} {Utils.escapeLinuxPath attr.dest} \;"]
-        | _ -> []
+            ["rsync -av --remove-source-files --prune-empty-dirs --progress --files-from <("] @ findParts @ [")"; sourceFolder; dest]
+        | Move attr -> // do not preserve structure
+            let dest = pathOrDefault attr.dest
+            findParts @ [$"{execParam} mv -f {{}} {dest} \;"]
     
     /// <summary>
     /// Actual constructor that calculates the shell command
@@ -89,7 +96,7 @@ module FindBuilder =
     /// <param name="sinceDate">Date to convert to days since, when required</param>
     /// <param name="rules">Find command parameters</param>
     let build sinceDate rules =
-        let folder = Utils.escapeLinuxPath (if rules.folder.Length > 0 then rules.folder else ".")
+        let folder = pathOrDefault rules.folder
         [
             $"find {folder}"
             namePattern rules.style rules.pattern
@@ -97,8 +104,7 @@ module FindBuilder =
             modifiedParameter sinceDate rules.lastModified
             accessedParameter sinceDate rules.lastAccessed
         ] |> appendAction rules.action folder "-exec" |> Utils.shellWrapBash 80
-        
-    
+            
     /// <summary>
     /// Impure variant of <c>build()</c> which uses current date as input.
     /// </summary>

@@ -21,13 +21,13 @@ module FindBuilderTests =
         |> should equal @"find -exec mv -f {} Replace\ \[brackets\] \;"
 
     [<Fact>]
-    let ``Do not do anything if dest is empty`` () =
+    let ``Use current directory if dest is empty`` () =
         let dest = {dest = ""; preserveStructure = false}
-        FindBuilder.appendAction (Action.Copy dest) "." "-exec" ["find"]
-        |> should be Empty
+        FindBuilder.appendAction (Action.Copy dest) "." "-exec" ["find"] |> Utils.shellWrapBash 80 
+        |> should equal @"find -exec cp -rf {} . \;"
 
-        FindBuilder.appendAction (Action.Move dest) "." "-exec" ["find"]
-        |> should be Empty
+        FindBuilder.appendAction (Action.Move dest) "." "-exec" ["find"] |> Utils.shellWrapBash 80
+        |> should equal @"find -exec mv -f {} . \;"
 
     [<Fact>]
     let ``Set date parameters`` () =

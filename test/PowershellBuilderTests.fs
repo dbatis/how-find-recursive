@@ -37,15 +37,6 @@ module PowershellBuilderTests =
         |> should equal "| ?{ $_.LastAccessTime -gt (Get-Date).AddHours(-3) }"
 
     [<Fact>]
-    let ``Do not do anything if dest is empty`` () =
-        let dest = {dest = ""; preserveStructure = false}
-        PowershellBuilder.appendAction (Action.Copy dest) "." ["find"]
-        |> should be Empty
-
-        PowershellBuilder.appendAction (Action.Move dest) "." ["find"]
-        |> should be Empty
-
-    [<Fact>]
     let ``Build correct find commands`` () =
         let mutable data = {
             folder = @"c:\users\my user\Downloads\test"

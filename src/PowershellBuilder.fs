@@ -9,6 +9,10 @@ open HowFindRecursive.BuilderInput
 [<RequireQualifiedAccess>]
 module PowershellBuilder =
 
+    /// Helper function to always have a correct path
+    let pathOrDefault path =
+        if String.length path > 0 then Utils.escapePowershellPath path else "'.'"
+    
     /// <summary>
     /// Builds file property filter for access/modified time.
     /// </summary>
@@ -107,20 +111,25 @@ module PowershellBuilder =
         | List -> findParts @ ["| more"]
         | Delete -> findParts @ ["| foreach { $_.Delete() }"]
         | MoveToTrash ->  ["Add-Type -AssemblyName Microsoft.VisualBasic\n"] @ findParts @ [moveToTrashForeach]
-        | Copy attr when attr.dest.Length > 0 && attr.preserveStructure -> copyCmd sourceFolder attr.dest findParts
-        | Copy attr when attr.dest.Length > 0 ->
-            findParts @ [$"| foreach {{ Copy-Item -Path $_.FullName -Destination {Utils.escapePowershellPath attr.dest} -Container -Force }}"]
-        | Move attr when attr.dest.Length > 0 && attr.preserveStructure -> moveCmd sourceFolder attr.dest findParts
-        | Move attr when attr.dest.Length > 0 ->
-            findParts @ [$"| foreach {{ Move-Item -Path $_.FullName -Destination {Utils.escapePowershellPath attr.dest} -Force }}"]
-        | _ -> []
+        | Copy attr when attr.preserveStructure ->
+            let dest = pathOrDefault attr.dest
+            copyCmd sourceFolder dest findParts
+        | Copy attr -> // do not preserve structure
+            let dest = pathOrDefault attr.dest
+            findParts @ [$"| foreach {{ Copy-Item -Path $_.FullName -Destination {dest} -Container -Force }}"]
+        | Move attr when attr.preserveStructure ->
+            let dest = pathOrDefault attr.dest
+            moveCmd sourceFolder dest findParts
+        | Move attr -> // do not preserve structure
+            let dest = pathOrDefault attr.dest
+            findParts @ [$"| foreach {{ Move-Item -Path $_.FullName -Destination {dest} -Force }}"]
     
     /// <summary>
     /// Actual constructor that calculates the shell command
     /// </summary>
     /// <param name="rules">Find command parameters</param>
     let build rules =
-        let folder = if rules.folder.Length > 0 then $"{Utils.escapePowershellPath rules.folder}" else "'.'"
+        let folder = pathOrDefault rules.folder
         [
             $"Get-ChildItem -Path {folder} -Recurse"
             globPattern rules
