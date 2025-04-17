@@ -5,10 +5,10 @@ open System.Text.RegularExpressions
 open HowFindRecursive.BuilderInput
 
 /// <summary>
-/// Functions to build command for <c>find</code> tool.
+/// Functions to build command for <c>find</c> tool.
 /// </summary>
 /// <remarks>
-/// Some functions are re-used in <c>fd</code> module,
+/// Some functions are re-used in <c>fd</c> module,
 /// when there is no difference between these tools
 /// </remarks>
 [<RequireQualifiedAccess>]
@@ -29,12 +29,12 @@ module FindBuilder =
                        | Exactly -> ""
         
         match date.unit with
-        | Minutes -> $" -{prefix}min {modifier}{date.number}"
-        | Hours -> $" -{prefix}min {modifier}{date.number * 60}"
-        | Days -> $" -{prefix}time {modifier}{date.number}"
+        | Minutes -> $"-{prefix}min {modifier}{date.number}"
+        | Hours -> $"-{prefix}min {modifier}{date.number * 60}"
+        | Days -> $"-{prefix}time {modifier}{date.number}"
         | Weeks -> $" --{prefix}time {modifier}{date.number * 7}"
-        | Months -> $" -{prefix}time {modifier}{date.number |> monthsToDays sinceDate}"
-        | Years -> $" -{prefix}time {modifier}{date.number |> yearsToDays sinceDate}"
+        | Months -> $"-{prefix}time {modifier}{date.number |> monthsToDays sinceDate}"
+        | Years -> $"-{prefix}time {modifier}{date.number |> yearsToDays sinceDate}"
     
     let modifiedParameter (sinceDate: DateTime) (date: DateSeek) : string =
         match date.number with
@@ -48,38 +48,40 @@ module FindBuilder =
     
     let namePattern (style: PatternStyle) (pattern: string) : string =
         match style with
-        | Glob when pattern.Length > 0 -> $" -name '{pattern.Trim()}'"
-        | Regexp when pattern.Length > 0  -> $" -regex '{pattern.Trim()}'"
+        | Glob when pattern.Length > 0 -> $"-name '{pattern.Trim()}'"
+        | Regexp when pattern.Length > 0  -> $"-regex '{pattern.Trim()}'"
         | _ -> ""
         
     let typeParameter targetType =
         match targetType with
-        | Directory -> " -type d"
-        | File -> " -type f"
+        | Directory -> "-type d"
+        | File -> "-type f"
         | _ -> ""
 
     /// <summary>
     /// Append the action part. Some actions are just additions in the end of the string, others
-    /// encapsulate the <c>find</code> operation.
+    /// encapsulate the <c>find</c> operation.
     /// </summary>
     /// <param name="action">What to do with found files</param>
     /// <param name="sourceFolder">Give source folder again for rsync</param>
     /// <param name="execParam">Style of exec param, since find and fd differ.</param>
-    /// <param name="findStr">The rest of the find command, as its location will differ.</param>
-    let appendAction action sourceFolder execParam findStr =
+    /// <param name="findParts">The rest of the find command, as its location will differ.</param>
+    let appendAction action sourceFolder execParam findParts =
         match action with
-        | List -> $"{findStr} | less"
-        | Delete -> $"{findStr} {execParam} rm -rf {{}} \;"
-        | MoveToTrash -> $"{findStr} {execParam} gio trash {{}} \;"
+        | List -> findParts @ ["| less"]
+        | Delete -> findParts @ [$"{execParam} rm -rf {{}} \;"]
+        | MoveToTrash -> findParts @ [$"{execParam} gio trash {{}} \;"]
         | Copy attr when attr.dest.Length > 0 && attr.preserveStructure ->
-            $"rsync -av --progress --file-from <({findStr}) {sourceFolder} {Utils.escapeLinuxPath attr.dest}"
+            // TODO: This is wrong due to source folder existing in both commands
+            ["rsync -av --progress --files-from <("] @ findParts @ [")"; sourceFolder; Utils.escapeLinuxPath attr.dest]
         | Copy attr when attr.dest.Length > 0 ->
-            $"{findStr} {execParam} cp -rf {{}} {Utils.escapeLinuxPath attr.dest} \;"
+            findParts @ [$"{execParam} cp -rf {{}} {Utils.escapeLinuxPath attr.dest} \;"]
         | Move attr when attr.dest.Length > 0 && attr.preserveStructure ->
-            $"rsync -av --remove-source-files --prune-empty-dirs --progress --file-from <({findStr}) {sourceFolder} {Utils.escapeLinuxPath attr.dest}"
+            // TODO: This is wrong due to source folder existing in both commands
+            ["rsync -av --remove-source-files --prune-empty-dirs --progress --files-from <("] @ findParts @ [")"; sourceFolder; Utils.escapeLinuxPath attr.dest]
         | Move attr when attr.dest.Length > 0 ->
-            $"{findStr} {execParam} mv -f {{}} {Utils.escapeLinuxPath attr.dest} \;"
-        | _ -> ""
+            findParts @ [$"{execParam} mv -f {{}} {Utils.escapeLinuxPath attr.dest} \;"]
+        | _ -> []
     
     /// <summary>
     /// Actual constructor that calculates the shell command
@@ -88,15 +90,17 @@ module FindBuilder =
     /// <param name="rules">Find command parameters</param>
     let build sinceDate rules =
         let folder = Utils.escapeLinuxPath (if rules.folder.Length > 0 then rules.folder else ".")
-        let name = namePattern rules.style rules.pattern
-        let ttype = typeParameter rules.targetType
-        let modified = modifiedParameter sinceDate rules.lastModified
-        let accessed = accessedParameter sinceDate rules.lastAccessed
-        $"find {folder}{name}{ttype}{modified}{accessed}" |> appendAction rules.action folder "-exec"
+        [
+            $"find {folder}"
+            namePattern rules.style rules.pattern
+            typeParameter rules.targetType
+            modifiedParameter sinceDate rules.lastModified
+            accessedParameter sinceDate rules.lastAccessed
+        ] |> appendAction rules.action folder "-exec" |> Utils.shellWrapBash 80
         
     
     /// <summary>
-    /// Impure variant of <c>build()</code> which uses current date as input.
+    /// Impure variant of <c>build()</c> which uses current date as input.
     /// </summary>
     /// <param name="rules">Find command parameters</param>
     let buildImpure rules = build DateTime.Now rules

@@ -26,18 +26,18 @@ module FdBuilder =
                         | Exactly -> "" // not supported
                        
             match date.unit with
-            | Minutes -> $" {param} {date.number}mins"
-            | Hours -> $" {param} {date.number}hours"
-            | Days -> $" {param} {date.number}days"
-            | Weeks -> $" {param} {date.number}weeks"
-            | Months -> $" {param} {date.number}months"
-            | Years -> $" {param} {date.number}years"
+            | Minutes -> $"{param} {date.number}mins"
+            | Hours -> $"{param} {date.number}hours"
+            | Days -> $"{param} {date.number}days"
+            | Weeks -> $"{param} {date.number}weeks"
+            | Months -> $"{param} {date.number}months"
+            | Years -> $"{param} {date.number}years"
                     
         | _ -> ""
 
-    let appendAction action sourceFolder findStr =
+    let appendAction action sourceFolder findParts =
         // same as find, but use --exec instead of -exec
-        FindBuilder.appendAction action sourceFolder "--exec" findStr
+        FindBuilder.appendAction action sourceFolder "--exec" findParts
         
     /// <summary>
     /// Actual constructor that calculates the shell command
@@ -45,8 +45,10 @@ module FdBuilder =
     /// <param name="rules">Find command parameters</param>
     let build rules =
         let folder = Utils.escapeLinuxPath (if rules.folder.Length > 0 then rules.folder else ".")
-        let name = namePattern rules.style rules.pattern
-        let ttype = (FindBuilder.typeParameter rules.targetType).Replace("-t", "--t")
-        let modified = modifiedParameter rules.lastModified
-        $"fd {name} {folder}{ttype}{modified}" |> appendAction rules.action folder
+        [
+            $"fd {namePattern rules.style rules.pattern}"
+            folder
+            (FindBuilder.typeParameter rules.targetType).Replace("-t", "--t")
+            modifiedParameter rules.lastModified
+        ] |> appendAction rules.action folder |> Utils.shellWrapBash 80
     
