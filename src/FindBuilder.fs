@@ -62,6 +62,40 @@ module FindBuilder =
         | File -> "-type f"
         | _ -> ""
 
+    let private copyForEach =
+        """-print0 | while read -d $'\0' file
+          |do
+          |    SRC_FILE=$(readlink -f "$file")
+          |    TARGET_FILE=${"SRC_FILE/$SRC_DIR/$DEST_DIR"}
+          |    TARGET_DIR=$(dirname $TARGET_FILE)
+          |    mkdir -p "$TARGET_DIR"
+          |    cp -rf "$SRC_FILE" "$TARGET_FILE"
+          |done""" |> Utils.stripMargin
+          
+    let copyCmd sourceFolder targetFolder findParts =
+        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \\
+            |DEST_DIR=$(readlink -f {targetFolder}); \\
+            """ |> Utils.stripMargin
+        ] @ findParts @ [copyForEach]
+    
+    let private moveForEach =
+        """-print0 | while read -d $'\0' file
+          |do
+          |    SRC_FILE=$(readlink -f "$file")
+          |    TARGET_FILE=${"SRC_FILE/$SRC_DIR/$DEST_DIR"}
+          |    TARGET_DIR=$(dirname $TARGET_FILE)
+          |    mkdir -p "$TARGET_DIR"
+          |    if [ -e "$SRC_FILE" ]; then
+          |        mv -f "$SRC_FILE" "$TARGET_FILE"
+          |    fi
+          |done""" |> Utils.stripMargin
+    
+    let moveCmd sourceFolder targetFolder findParts =
+        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \\
+            |DEST_DIR=$(readlink -f {targetFolder}); \\
+            """ |> Utils.stripMargin
+        ] @ findParts @ [moveForEach]
+    
     /// <summary>
     /// Append the action part. Some actions are just additions in the end of the string, others
     /// encapsulate the <c>find</c> operation.
@@ -77,15 +111,13 @@ module FindBuilder =
         | MoveToTrash -> findParts @ [$"{execParam} gio trash {{}} \;"]
         | Copy attr when attr.preserveStructure ->
             let dest = pathOrDefault attr.dest
-            // TODO: This is wrong due to source folder existing in both commands
-            ["rsync -av --progress --files-from <("] @ findParts @ [")"; sourceFolder; dest]
+            copyCmd sourceFolder dest findParts
         | Copy attr -> // do not preserve structure
             let dest = pathOrDefault attr.dest
             findParts @ [$"{execParam} cp -rf {{}} {dest} \;"]
         | Move attr when attr.preserveStructure ->
             let dest = pathOrDefault attr.dest
-            // TODO: This is wrong due to source folder existing in both commands
-            ["rsync -av --remove-source-files --prune-empty-dirs --progress --files-from <("] @ findParts @ [")"; sourceFolder; dest]
+            moveCmd sourceFolder dest findParts
         | Move attr -> // do not preserve structure
             let dest = pathOrDefault attr.dest
             findParts @ [$"{execParam} mv -f {{}} {dest} \;"]
