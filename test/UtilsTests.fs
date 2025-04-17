@@ -25,6 +25,19 @@ module UtilsTests =
         Utils.escapeLinuxPath @"file\backslashes\.txt" |> should equal @"file\\backslashes\\.txt"
         Utils.escapeLinuxPath "file @*&$()!#[]:.txt" |> should equal @"file\ \@\*\&\$\(\)\!\#\[\]:.txt"        
 
+    [<Fact>]
     let ``Must escape special characters for Windows shells`` () =
-        Utils.escapePowershellPath "Replace [brackets]" |> should equal @"'Replace \[brackets\]'"
-        Utils.escapePowershellPath "file @&$()!#[]:.txt" |> should equal @"'file @&$()!#\[\]:.txt'"
+        Utils.escapePowershellPath "Replace [brackets]" |> should equal @"'Replace `[brackets`]'"
+        Utils.escapePowershellPath "file @&$()!#[]:.txt" |> should equal @"'file @&$()!#`[`]:.txt'"
+
+    [<Fact>]
+    let ``Must wrap lines if length exceeded`` () =
+        let parts = [
+            String.replicate 10 "a"
+            String.replicate 5 "b"
+            String.replicate 25 "c"
+            String.replicate 41 "d"
+        ]
+        let expected = String.replicate 10 "a" + " " + String.replicate 5 "b" + " \\\n" + String.replicate 25 "c" + " \\\n" + String.replicate 41 "d"
+        Utils.shellWrap "\\" 40 parts
+        |> should equal expected

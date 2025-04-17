@@ -43,7 +43,7 @@ module Utils =
     let escapeLinuxPath (path: string) : string =
         specialLinuxCharsRx.Replace(path.Trim(), "\\$1")
 
-    let private specialPSCharsRx = Regex(@"(\[\])", RegexOptions.ECMAScript)
+    let private specialPSCharsRx = Regex(@"([\[\]])", RegexOptions.ECMAScript)
     
     /// Escape path characters as required for Powershell. Will put path inside quotes.
     let escapePowershellPath (path: string) : string =
@@ -53,3 +53,26 @@ module Utils =
         match Int32.TryParse maybeNumber with
         | true, result -> result
         | _, _ -> 0    
+
+    /// <summary>
+    /// Concatenate the command parts given as input, so that we wrap at <c>length</c> characters when able.
+    /// Each part will be kept intact.
+    /// </summary>
+    /// <param name="wrapChar">Shell character that indicates the command continues on next line (\ or `)</param>
+    /// <param name="length">Length to wrap at</param>
+    /// <param name="parts">Command parts</param>
+    let shellWrap wrapChar length parts =
+        let rec doWrap wrapChar length parts acc =
+            match parts with
+            | [] -> acc
+            | head :: tail ->
+                if String.length acc = 0 then head
+                elif (String.length acc) + (String.length head) >= length then acc + " " + wrapChar + "\n" + head
+                else acc + " " + head
+                |> doWrap wrapChar length tail
+        doWrap wrapChar length parts ""
+    
+    let shellWrapBash= shellWrap "\\"
+    
+    let shellWrapPowershell= shellWrap "|"
+    
