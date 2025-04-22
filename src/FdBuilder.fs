@@ -50,5 +50,8 @@ module FdBuilder =
             folder
             (FindBuilder.typeParameter rules.targetType).Replace("-t", "--t")
             modifiedParameter rules.lastModified
-        ] |> appendAction rules.action folder |> Utils.shellWrapBash 80
+        ]
+        |> appendAction rules.action folder
+        |> Utils.shellWrapBash 80
+        |> Utils.stringReplace "-print0" "--print0" // to fix find parameter
     

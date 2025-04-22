@@ -80,3 +80,5 @@ module Utils =
     
     let shellWrapPowershell= shellWrap "`"
     
+    let stringReplace (searchStr: string) (replaceStr: string) (str: string) =
+        str.Replace(searchStr, replaceStr)
