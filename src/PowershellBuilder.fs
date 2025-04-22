@@ -116,13 +116,13 @@ module PowershellBuilder =
             copyCmd sourceFolder dest findParts
         | Copy attr -> // do not preserve structure
             let dest = pathOrDefault attr.dest
-            findParts @ [$"| foreach {{ Copy-Item -Path $_.FullName -Destination {dest} -Container -Force }}"]
+            findParts @ [$"| foreach {{ Copy-Item -LiteralPath $_.FullName -Destination {dest} -Container -Force }}"]
         | Move attr when attr.preserveStructure ->
             let dest = pathOrDefault attr.dest
             moveCmd sourceFolder dest findParts
         | Move attr -> // do not preserve structure
             let dest = pathOrDefault attr.dest
-            findParts @ [$"| foreach {{ Move-Item -Path $_.FullName -Destination {dest} -Force }}"]
+            findParts @ [$"| foreach {{ Move-Item -LiteralPath $_.FullName -Destination {dest} -Force }}"]
     
     /// <summary>
     /// Actual constructor that calculates the shell command
