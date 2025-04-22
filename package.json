@@ -1,0 +1,25 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "main": "Program.fs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "dotnet tool restore",
+    "start": "dotnet fable watch src --run webpack serve",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "vite": "^6.2.6",
+    "webpack": "^5.99.5",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
