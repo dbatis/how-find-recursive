@@ -10,7 +10,7 @@ module BuilderInput =
     [<StringEnum>] type TargetType = File | Directory | All
     [<StringEnum>] type Output = Find | Fd | Powershell
     [<StringEnum>] type TimeQualifier = EarlierThan | Exactly | LaterThan
-    [<StringEnum>] type TrashEnvironment = Gnome | TrashCli | MacOS | Powershell
+    [<StringEnum>] type TrashEnvironment = Gnome | TrashCli | MacOS | PS
     
     type Destination = {
         dest: string
@@ -57,3 +57,13 @@ module BuilderInput =
         | Move _ -> true
         | _ -> false
     
+    let isPreserve input =
+        match input.action with
+        | Copy x when x.preserveStructure -> true
+        | Move x when x.preserveStructure -> true
+        | _ -> false
+    
+    let isCopy input = 
+        match input.action with
+        | Copy _ -> true
+        | _ -> false

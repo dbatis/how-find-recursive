@@ -6,6 +6,7 @@ open Fable.React.Props
 open Elmish.React
 open Elmish
 open HowFindRecursive
+open HowFindRecursive.UiNotes
 open HowFindRecursive.UiViews
 
 let mainView model dispatch =
@@ -33,6 +34,7 @@ let mainView model dispatch =
                     outputSelectTrashEnv model dispatch
                     outputView model dispatch
                     copyToClipboardView model dispatch
+                    notesView model dispatch
                 ]
             ]
         ]
