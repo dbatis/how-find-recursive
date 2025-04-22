@@ -80,12 +80,12 @@ module PowershellBuilder =
            |    if (!(Test-Path -Type Container -Path $targetParent)) {
            |        New-Item -Type Directory -Path "$targetParent" -Force
            |    }
-           |    Copy-Item -Path $_.FullName -Destination $targetFile -Force -Recurse -Container:$false
+           |    Copy-Item -LiteralPath $_.FullName -Destination $targetFile -Force -Recurse -Container:$false
            |}""" |> Utils.stripMargin
     
     let copyCmd sourceFolder targetFolder findParts=
         [$"""$srcDir=Convert-Path -LiteralPath {sourceFolder}
-            |$destDir=Convert-Path -LiteralPath {Utils.escapePowershellPath targetFolder}
+            |$destDir=Convert-Path -LiteralPath {targetFolder}
             """ |> Utils.stripMargin
         ] @ findParts @ [copyForeach]
 
@@ -97,12 +97,12 @@ module PowershellBuilder =
            |    if (!(Test-Path -Type Container -Path $targetParent)) {
            |        New-Item -Type Directory -Path "$targetParent" -Force
            |    }
-           |    Move-Item -Path $_.FullName -Destination $targetFile -Force 
+           |    Move-Item -LiteralPath $_.FullName -Destination $targetFile -Force 
            |}""" |> Utils.stripMargin
           
     let moveCmd sourceFolder targetFolder findParts=
         [$"""$srcDir=Convert-Path -LiteralPath {sourceFolder}
-            |$destDir=Convert-Path -LiteralPath {Utils.escapePowershellPath targetFolder}
+            |$destDir=Convert-Path -LiteralPath {targetFolder}
             """ |> Utils.stripMargin
         ] @ findParts @ [moveForeach]
     
