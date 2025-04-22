@@ -10,7 +10,8 @@ module BuilderInput =
     [<StringEnum>] type TargetType = File | Directory | All
     [<StringEnum>] type Output = Find | Fd | Powershell
     [<StringEnum>] type TimeQualifier = EarlierThan | Exactly | LaterThan
-
+    [<StringEnum>] type TrashEnvironment = Gnome | TrashCli | MacOS | Powershell
+    
     type Destination = {
         dest: string
         preserveStructure: bool
@@ -20,7 +21,7 @@ module BuilderInput =
     type Action =
         | List
         | Delete
-        | MoveToTrash
+        | MoveToTrash of TrashEnvironment
         | Copy of Destination
         | Move of Destination
     
@@ -43,4 +44,16 @@ module BuilderInput =
     }
     
     let emptyDateField = {qualifier = EarlierThan; number = 0; unit = Days}
+    
+    // helper functions for conditions
+    let isMoveToTrash input =
+        match input.action with
+        | MoveToTrash _ -> true
+        | _ -> false
+    
+    let isMoveOrCopy input =
+        match input.action with
+        | Copy _ -> true
+        | Move _ -> true
+        | _ -> false
     

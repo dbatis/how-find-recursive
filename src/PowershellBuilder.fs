@@ -110,7 +110,7 @@ module PowershellBuilder =
         match action with
         | List -> findParts @ ["| more"]
         | Delete -> findParts @ ["| foreach { $_.Delete() }"]
-        | MoveToTrash ->  ["Add-Type -AssemblyName Microsoft.VisualBasic\n"] @ findParts @ [moveToTrashForeach]
+        | MoveToTrash _ ->  ["Add-Type -AssemblyName Microsoft.VisualBasic\n"] @ findParts @ [moveToTrashForeach]
         | Copy attr when attr.preserveStructure ->
             let dest = pathOrDefault attr.dest
             copyCmd sourceFolder dest findParts

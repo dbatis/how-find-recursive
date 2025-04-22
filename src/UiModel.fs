@@ -17,6 +17,7 @@ module UiModel =
         modifiedNumber: string // separate from build params, to avoid issues with string -> int conversion
         accessedNumber: string
         copyMoveParams: Destination // to cache them when action is switched
+        trashEnvironment: TrashEnvironment // keep it separate to re-insert it as needed
     }
     
     type Msg =
@@ -37,6 +38,7 @@ module UiModel =
         | ChangeCopyMovePreserve of bool
         | CopyChanged 
         | MoveChanged
+        | TrashEnvironmentChanged of TrashEnvironment
     
     let init() =
         {
@@ -54,15 +56,9 @@ module UiModel =
             modifiedNumber = ""
             accessedNumber = ""
             copyMoveParams = { dest = ""; preserveStructure = false }
+            trashEnvironment = Gnome
         }, Cmd.ofMsg BuildOutput
 
-    // helper functions for UI
-    let isAccessedVisible model =
-        model.outputType = Find
-    
-    let isExactlyVisible model =
-        model.outputType = Find
-    
     let update msg model =
         match msg with
         | BuildOutput ->
@@ -155,4 +151,11 @@ module UiModel =
             | Move _ ->
                 let buildParams = {model.buildParams with action = Move model.copyMoveParams}
                 {model with buildParams = buildParams}, Cmd.ofMsg BuildOutput
+            | _ -> model, Cmd.none
+        
+        | TrashEnvironmentChanged environment ->
+            match model.buildParams.action with
+            | MoveToTrash _ ->
+                let buildParams = {model.buildParams with action = MoveToTrash environment}
+                {model with buildParams = buildParams; trashEnvironment = environment}, Cmd.ofMsg BuildOutput
             | _ -> model, Cmd.none

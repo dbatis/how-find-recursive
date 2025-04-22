@@ -30,6 +30,7 @@ let mainView model dispatch =
                 h2 [ ClassName "mb-2 text-center" ] [ str "Output" ]
                 form [ ClassName "text-start align-text-top" ] [
                     outputSelectView model dispatch
+                    outputSelectTrashEnv model dispatch
                     outputView model dispatch
                     copyToClipboardView model dispatch
                 ]

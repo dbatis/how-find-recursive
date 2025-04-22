@@ -108,7 +108,9 @@ module FindBuilder =
         match action with
         | List -> findParts @ ["| less"]
         | Delete -> findParts @ [$"{execParam} rm -rf {{}} \;"]
-        | MoveToTrash -> findParts @ [$"{execParam} gio trash {{}} \;"]
+        | MoveToTrash Gnome -> findParts @ [$"{execParam} gio trash {{}} \;"]
+        | MoveToTrash TrashCli -> ["# sudo apt install trash-cli\n"] @ findParts @ [$"{execParam} trash-put {{}} \;"]
+        | MoveToTrash MacOS -> ["# brew install trash\n"] @ findParts @ [$"{execParam} trash {{}} \;"]
         | Copy attr when attr.preserveStructure ->
             let dest = pathOrDefault attr.dest
             copyCmd sourceFolder dest findParts
@@ -121,6 +123,7 @@ module FindBuilder =
         | Move attr -> // do not preserve structure
             let dest = pathOrDefault attr.dest
             findParts @ [$"{execParam} mv -f {{}} {dest} \;"]
+        | _ -> [""] // should not occur unless by bug, like MoveToTrash Powershell
     
     /// <summary>
     /// Actual constructor that calculates the shell command

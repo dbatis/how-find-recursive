@@ -193,7 +193,7 @@ module UiViews =
                 div [ ClassName "btn-group d-flex"; Role "group"; AriaLabel "Action" ] [
                     buttonInGroup "List" (model.buildParams.action = List) (fun _ -> List |> ChangeAction |> dispatch)
                     buttonInGroup "Delete" (model.buildParams.action = Delete) (fun _ -> Delete |> ChangeAction |> dispatch)
-                    buttonInGroup "Trash" (model.buildParams.action = MoveToTrash) (fun _ -> MoveToTrash |> ChangeAction |> dispatch)
+                    buttonInGroup "Trash" (isMoveToTrash model.buildParams) (fun _ -> MoveToTrash model.trashEnvironment |> ChangeAction |> dispatch)
                     buttonInGroup "Copy" (match model.buildParams.action with
                                           | Copy _ -> true
                                           | _ -> false) (fun _ -> Copy model.copyMoveParams |> ChangeAction |> dispatch)
@@ -205,7 +205,7 @@ module UiViews =
         ]
     
     let targetDirView model dispatch =
-        formDivConditional (not (List.contains model.buildParams.action [List;Delete;MoveToTrash])) [
+        formDivConditional (isMoveOrCopy model.buildParams) [
             formLabel "inputTargetDir" "Target folder:"
             inputDiv "" [
                 input [
@@ -220,7 +220,7 @@ module UiViews =
         ]
     
     let targetPreserveView model dispatch =
-        formDivConditional (not (List.contains model.buildParams.action [List;Delete;MoveToTrash])) [
+        formDivConditional (isMoveOrCopy model.buildParams) [
             formLabel "" ""
             inputDiv "" [
                 div [ ClassName "form-check" ] [
@@ -246,6 +246,17 @@ module UiViews =
                     buttonInGroup "find (Linux / Mac)" (model.outputType = Find) (fun _ -> Find |> ChangeOutputType |> dispatch)
                     buttonInGroup "fd (Linux / Mac)" (model.outputType = Fd) (fun _ -> Fd |> ChangeOutputType |> dispatch)
                     buttonInGroup "Powershell (Windows)" (model.outputType = Powershell) (fun _ -> Powershell |> ChangeOutputType |> dispatch)
+                ]
+            ]
+        ]
+    
+    let outputSelectTrashEnv model dispatch =
+        formDivConditional (isMoveToTrash model.buildParams && model.outputType <> Powershell) [
+            outputDiv "" [
+                div [ ClassName "btn-group d-flex"; Role "group"; AriaLabel "Environment" ] [
+                    buttonInGroup "Gnome" (model.trashEnvironment = Gnome) (fun _ -> Gnome |> TrashEnvironmentChanged |> dispatch)
+                    buttonInGroup "trash-cli" (model.trashEnvironment = TrashCli) (fun _ -> TrashCli |> TrashEnvironmentChanged |> dispatch)
+                    buttonInGroup "MacOS" (model.trashEnvironment = MacOS) (fun _ -> MacOS |> TrashEnvironmentChanged |> dispatch)
                 ]
             ]
         ]
