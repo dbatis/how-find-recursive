@@ -12,7 +12,7 @@ the installation of external tools, however there are certain cases
 a third-party tool.
 
 You can use this tool online at
-[https://dbatis.github.com/how-find-recursive](https://dbatis.github.com/how-find-recursive)
+[https://dbatis.github.io/how-find-recursive/](https://dbatis.github.io/how-find-recursive/)
 
 ## License
 
