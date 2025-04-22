@@ -73,8 +73,8 @@ module FindBuilder =
           |done""" |> Utils.stripMargin
           
     let copyCmd sourceFolder targetFolder findParts =
-        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \\
-            |DEST_DIR=$(readlink -f {targetFolder}); \\
+        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \
+            |DEST_DIR=$(readlink -f {targetFolder}); \
             """ |> Utils.stripMargin
         ] @ findParts @ [copyForEach]
     
@@ -91,8 +91,8 @@ module FindBuilder =
           |done""" |> Utils.stripMargin
     
     let moveCmd sourceFolder targetFolder findParts =
-        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \\
-            |DEST_DIR=$(readlink -f {targetFolder}); \\
+        [$"""SRC_DIR=$(readlink -f {sourceFolder}); \
+            |DEST_DIR=$(readlink -f {targetFolder}); \
             """ |> Utils.stripMargin
         ] @ findParts @ [moveForEach]
     
